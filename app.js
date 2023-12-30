@@ -1,11 +1,10 @@
 const express = require('express');
 const { MongoClient } = require('mongodb');
+const nodemailer = require('nodemailer');
 require('dotenv').config();
-
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
 
 // Middleware to parse JSON requests
 app.use(express.json());
@@ -13,6 +12,37 @@ app.use(express.json());
 
 // MongoDB connection string using environment variables
 const mongoUri = `mongodb+srv://${process.env.MONGO_USERNAME}:${process.env.MONGO_PASSWORD}@resource-usage.yduizio.mongodb.net/${process.env.MONGO_DATABASE}?retryWrites=true&w=majority`;
+
+
+// Function to send an email alert
+const sendEmailAlert = async (to, subject, text) => {
+  // Create a Nodemailer transporter
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+  
+  // Define the email options
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: to,
+    subject: subject,
+    text: text,
+  };
+
+  try {
+    // Send the email
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Email sent:', info.response);
+    return true;
+  } catch (error) {
+    console.error('Error sending email:', error.message);
+    return false;
+  }
+};
 
 
 // Function to monitor user usage
@@ -85,7 +115,7 @@ const isSameDay = (date1, date2) => {
 
 
 // Function to alert user on high bandwidth usage
-const alertUserOnHighUsage = async (userId, res) => {
+const alertUserOnHighUsage = async (userId, email, res) => {
   // Connect to MongoDB
   const client = new MongoClient(mongoUri);
   await client.connect();
@@ -98,10 +128,11 @@ const alertUserOnHighUsage = async (userId, res) => {
     const user = await collection.findOne({ userId });
 
     if (user) {
-      // Implement your logic for alerting the user here
-      // This can include sending notifications or emails to the user
-      // You can customize this based on your application's requirements
-      // For now, let's just simulate a success response
+      const alertSubject = 'High Bandwidth Usage Alert';
+      const alertText = 'Dear user, your bandwidth usage today is unusually high. Please review and take necessary actions.';
+
+      // Call the function to send the email alert
+      sendEmailAlert(email, alertSubject, alertText);
       return true;
     } else {
       console.error('User not found.');
@@ -142,9 +173,10 @@ app.post('/monitor/:userId', async (req, res) => {
 // API endpoint to alert user on high bandwidth usage
 app.post('/alert/:userId', async (req, res) => {
   const userId = req.params.userId;
+  const email = req.body.email;
 
   try {
-    const success = await alertUserOnHighUsage(userId, res);
+    const success = await alertUserOnHighUsage(userId, email, res);
 
     if (success) {
       res.json({ success: true, message: 'User alerted on high bandwidth usage.' });

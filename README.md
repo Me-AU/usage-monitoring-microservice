@@ -40,6 +40,13 @@ Before you begin, ensure you have the following installed:
    node app.js
    ```
 
+   Use the following if your dependencies are up to date but a deprecation warning arises.
+
+   ```bash
+   node --no-deprecation app.js 
+   ```
+   
+
    The microservice will be running on `http://localhost:3000`.
 
 ## Monitoring User Usage
@@ -66,7 +73,8 @@ POST http://localhost:3000/monitor/123
 
 ### Important Note
 
-- Ensure that the `bandwidthBytes` field is included in the request body. Send 0 as its value if you do not want to update it.
+- Ensure that the `bandwidthBytes` field is included in the request body. This is the size of the image uploaded by the user. 
+- Controller/Model sends this request whenever a user uploads an image. Send 0 as its value if you do not want to update this.
 - `bandwidthBytes` should be a non-negative integer representing the amount of bandwidth used in bytes.
 
 ## Alerting User on High Bandwidth Usage
@@ -75,7 +83,7 @@ POST http://localhost:3000/monitor/123
 
 - **URL**: `/alert/:userId`
 - **Method**: `POST`
-- **Description**: Alerts the user when exceeding a specific bandwidth limit.
+- **Description**: Alerts the user when exceeding a specific bandwidth limit. Users need to include the `email` value in the request body.
 
 ### Request Format
 
@@ -83,6 +91,19 @@ POST http://localhost:3000/monitor/123
 ```http
 POST http://localhost:3000/alert/123
 ```
+
+**Request Body Example:**
+```json
+{
+  "email": "stanweer.bese21seecs@seecs.edu.pk"
+}
+
+```
+
+### Note
+
+- Ensure that the `email` field is included in the request body. `email` is the email of the user with high bandwidth usage.
+- Controller/Model sends this request whenever a user uploads an image. This decision is based on value of the `usageCount` key in the response of the `/monitor/:userId` request.
 
 ## Contributing
 
