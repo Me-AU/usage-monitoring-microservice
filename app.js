@@ -1,11 +1,12 @@
 const express = require('express');
 const { MongoClient } = require('mongodb');
+require('dotenv').config();
 
 const app = express();
 const PORT = 3000;
 
-// MongoDB connection string (replace with your MongoDB Atlas connection string)
-const mongoUri = 'mongodb+srv://<username>:<password>@cluster0.mongodb.net/<database>?retryWrites=true&w=majority';
+// MongoDB connection string using environment variables
+const mongoUri = `mongodb+srv://${process.env.MONGO_USERNAME}:${process.env.MONGO_PASSWORD}@resource-usage.yduizio.mongodb.net/${process.env.MONGO_DATABASE}?retryWrites=true&w=majority`;
 
 app.get('/usage/:userId', async (req, res) => {
   const userId = req.params.userId;
@@ -15,7 +16,7 @@ app.get('/usage/:userId', async (req, res) => {
   await client.connect();
 
   try {
-    const db = client.db('your_database_name');
+    const db = client.db(process.env.MONGO_DATABASE);
     const collection = db.collection('usage');
 
     // Example: Retrieve usage data for a specific user
