@@ -42,21 +42,47 @@ Before you begin, ensure you have the following installed:
 
    The microservice will be running on `http://localhost:3000`.
 
-## Endpoints
+## Monitoring User Usage
 
-- **GET /usage/:userId:** Retrieve usage data for a specific user.
+### API Endpoint
 
-## Testing
+- **URL**: `/monitor/:userId`
+- **Method**: `POST`
+- **Description**: Monitors user usage and updates the usage count. Users need to include the `bandwidthBytes` value in the request body.
 
-You can test the microservice by making GET requests to the provided endpoints. For example:
+### Request Format
 
-```bash
-curl http://localhost:3000/usage/123
+**Request URL Example:**
+```http
+POST http://localhost:3000/monitor/123
 ```
 
-## Customize and Extend
+**Request Body Example:**
+```json
+{
+  "bandwidthBytes": 500
+}
+```
 
-Feel free to customize and extend the functionality of the microservice according to your project requirements. Add additional routes, error handling, and logic as needed.
+### Important Note
+
+- Ensure that the `bandwidthBytes` field is included in the request body. Send 0 as its value if you do not want to update it.
+- `bandwidthBytes` should be a non-negative integer representing the amount of bandwidth used in bytes.
+
+## Alerting User on High Bandwidth Usage
+
+### API Endpoint
+
+- **URL**: `/alert/:userId`
+- **Method**: `POST`
+- **Description**: Alerts the user when exceeding a specific bandwidth limit.
+
+### Request Format
+
+**Request URL Example:**
+```http
+POST http://localhost:3000/alert/123
+```
 
 ## Contributing
 
